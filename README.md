@@ -1,10 +1,13 @@
 # Addr2lineJs
 
+An addr2line web app. Upload your elf file, provide some text, and this app will translate your addresses on the spot.
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.5.0.
 
-## Development server
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Set-up development server
+1. Install npm
+2. Install and start MongoDB
+3. Run `npm start` for a dev server. Navigate to `http://localhost:3000/`
 
 ## Code scaffolding
 
