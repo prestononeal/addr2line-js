@@ -4,6 +4,13 @@ const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
 
+// MongoDB connection for GridFS */
+const multer = require('multer');
+const storage = require('multer-gridfs-storage')({
+  url: 'mongodb://localhost:27017/addr2line-js'
+});
+const upload = multer({ storage: storage }).single('file');
+
 // Get our API routes
 const api = require('./server/routes/api');
 
@@ -38,4 +45,4 @@ const server = http.createServer(app);
 /**
  * Listen on provided port, on all network interfaces.
  */
-server.listen(port, () => console.log(`API running on localhost:${port}`));
+server.listen(port, () => console.log(`Running on localhost:${port}`));
