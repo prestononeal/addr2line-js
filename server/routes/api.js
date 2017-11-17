@@ -5,6 +5,7 @@ const config = require('../config/config');
 const mongoose = require("mongoose");
 const fs = require('fs');
 const md5 = require('md5');
+const ObjectID = require('mongodb').ObjectID
 
 let Grid = require("gridfs-stream");
 let conn = mongoose.connection;
@@ -19,7 +20,7 @@ conn.once("open", () => {
   router.get('/elf/:id/:addr', (req, res) => {
     console.log(`Translating address <${req.params.addr}> against file <${req.params.id}>`);
 
-    let elfFile = gfs.files.find({id: req.params.id}).toArray((err, files) => {
+    let elfFile = gfs.files.find({_id: new ObjectID(req.params.id)}).toArray((err, files) => {
       if (err) {
         console.log(`Error when finding file <${req.params.id}>: <${err}>`)
         return res.status(400).send(`Error when searching for elf file: ${err}`)
@@ -28,7 +29,7 @@ conn.once("open", () => {
         console.log(`Could not find file <${req.params.id}>. Aborting translation.`)
         return res.status(400).send(`Could not find file ${req.params.id}. Aborting translation.`)
       }
-      console.log(`Found file <${req.params.id}>`);
+      console.log(`Found file <${files[0]._id}>`);
       return res.status(200).send('Success');
     });
 
