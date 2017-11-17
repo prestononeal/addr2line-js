@@ -16,6 +16,23 @@ conn.once("open", () => {
   router.get('/', (req, res) => {
     res.send('API works!');
   });
+  router.get('/elf/:id/:addr', (req, res) => {
+    console.log(`Translating address <${req.params.addr}> against file <${req.params.id}>`);
+
+    let elfFile = gfs.files.find({id: req.params.id}).toArray((err, files) => {
+      if (err) {
+        console.log(`Error when finding file <${req.params.id}>: <${err}>`)
+        return res.status(400).send(`Error when searching for elf file: ${err}`)
+      }
+      if (files.length == 0) {
+        console.log(`Could not find file <${req.params.id}>. Aborting translation.`)
+        return res.status(400).send(`Could not find file ${req.params.id}. Aborting translation.`)
+      }
+      console.log(`Found file <${req.params.id}>`);
+      return res.status(200).send('Success');
+    });
+
+  });
   router.post('/elfs', (req, res) => {
     if (!req.files.file) {
       res.status(400).send('No file received');
@@ -31,7 +48,7 @@ conn.once("open", () => {
         return res.status(400).send(`Error when searching for existing elf file: ${err}`)
       }
       if (files.length > 0) {
-        console.log(`Found existing file with md5 <${checksum}>`);
+        console.log(`Found existing file with md5 <${checksum}>: <${files[0]._id}>`);
         // We already stored this file. Return its info.
         return res.status(200).send({
           message: 'Success',
