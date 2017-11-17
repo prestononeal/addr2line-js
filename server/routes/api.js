@@ -4,6 +4,7 @@ const router = require('express').Router();
 const config = require('../config/config');
 const mongoose = require("mongoose");
 const fs = require('fs');
+const md5 = require('md5');
 
 let Grid = require("gridfs-stream");
 let conn = mongoose.connection;
@@ -16,27 +17,48 @@ conn.once("open", () => {
     res.send('API works!');
   });
   router.post('/elfs', (req, res) => {
+    if (!req.files.file) {
+      res.status(400).send('No file received');
+      return;
+    }
     let part = req.files.file;
-    let writeStream = gfs.createWriteStream({
-      // filename: part.name,
-      mode: 'w',
-    });
 
-    writeStream.on('close', (file) => {
-      // checking for file
-      if(!file) {
-        res.status(400).send('No file received');
+    let checksum = md5(part.data);
+
+    // Do we already have a file with this checksum? If so, return that one
+    let existing = gfs.files.find({md5: checksum}).toArray((err, files) => {
+      if (err) {
+        return res.status(400).send(`Error when searching for existing elf file: ${err}`)
       }
-      return res.status(200).send({
-        message: 'Success',
-        file: file
+      if (files.length > 0) {
+        console.log(`Found existing file with md5 <${checksum}>`);
+        // We already stored this file. Return its info.
+        return res.status(200).send({
+          message: 'Success',
+          file: files[0]
+        })
+      }
+
+      console.log(`Creating new file with md5 <${checksum}>`)
+      let writeStream = gfs.createWriteStream({
+        mode: 'w',
       });
-    });
-    // using callbacks is important !
-    // writeStream should end the operation once all data is written to the DB 
-    writeStream.write(part.data, () => {
-      writeStream.end();
-    });  
+      writeStream.on('close', (file) => {
+        // checking for file
+        if(!file) {
+          res.status(400).send('Unexpected error while saving file');
+        }
+        return res.status(200).send({
+          message: 'Success',
+          file: file
+        });
+      });
+      // using callbacks is important !
+      // writeStream should end the operation once all data is written to the DB 
+      writeStream.write(part.data, () => {
+        writeStream.end();
+      });  
+    })
   });
 });
 
