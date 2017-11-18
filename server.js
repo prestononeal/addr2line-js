@@ -8,9 +8,6 @@ const express = require('express'),
 // Express conf !
 require('./server/config/express.config')(app);
 
-// Mongoose Conf !
-require('./server/config/mongoose.config')(config);
-
 // Point static path to dist
 app.use(express.static(path.join(__dirname, 'dist')));
 // Catch all other routes and return the index file
