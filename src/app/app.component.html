@@ -6,7 +6,8 @@
 </div>
 <table>
   <tr>
-    <input type="file" (change)="fileChange($event)" placeholder="Upload file" accept=".elf">
+    <input type="file" ng2FileSelect [uploader]="uploader" />
+    <button type="button" class="btn btn-success btn-s" (click)="uploader.uploadAll()" [disabled]="!uploader.getNotUploadedItems().length"><span class="glyphicon glyphicon-upload"></span>Upload</button>
   </tr>
   <tr>
     <td>Text to translate:</td>
@@ -14,7 +15,7 @@
   </tr>
   <tr>
     <td><textarea cols="50" rows="20" [(ngModel)]="translateMe"></textarea></td>
-    <td><textarea cols="50" rows="20"></textarea></td>
+    <td><textarea readonly cols="50" rows="20" [(ngModel)]="translated"></textarea></td>
   </tr>
   <tr>
     <button (click)="translate()">Translate</button>

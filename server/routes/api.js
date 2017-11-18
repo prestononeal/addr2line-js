@@ -27,7 +27,7 @@ router.get('/elf/:id/:addr', (req, resp) => {
   Promise.all(translations)
   .then( res => {
     console.log(`Translation of <${addresses}> against file <${elfFile}>: <${JSON.stringify(res)}>`)
-    return resp.json(res);
+    return resp.json({results: res});
   });
 
 });
