@@ -21,6 +21,7 @@
     "@angular/platform-browser": "^5.0.2",
     "@angular/platform-browser-dynamic": "^5.0.2",
     "@angular/router": "^5.0.2",
+    "addr2line": "0.0.4",
     "core-js": "^2.4.1",
     "express": "^4.16.2",
     "express-fileupload": "^0.3.0",

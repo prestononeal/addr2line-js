@@ -7,30 +7,29 @@ const fs = require('fs-extra');
 const md5 = require('md5');
 const touch = require('touch');
 
+const Addr2Line = require('addr2line').Addr2Line;
 
-router.get('/', (req, res) => {
-  res.send('API works!');
+
+router.get('/', (req, resp) => {
+  resp.send('API works!');
 });
-router.get('/elf/:id/:addr', (req, res) => {
-  console.log(`Translating address <${req.params.addr}> against file <${req.params.id}>`);
+router.get('/elf/:id/:addr', (req, resp) => {
+  let elfFile = `./tmp/${req.params.id}/${req.params.id}.elf`;
+  let address = req.params.addr
+  console.log(`Translating address <${address}> against file <${elfFile}>`);
 
-  let elfFile = gfs.files.find({_id: new ObjectID(req.params.id)}).toArray((err, files) => {
-    if (err) {
-      console.log(`Error when finding file <${req.params.id}>: <${err}>`)
-      return res.status(400).send(`Error when searching for elf file: ${err}`)
-    }
-    if (files.length == 0) {
-      console.log(`Could not find file <${req.params.id}>. Aborting translation.`)
-      return res.status(400).send(`Could not find file ${req.params.id}. Aborting translation.`)
-    }
-    console.log(`Found file <${files[0]._id}>`);
-    return res.status(200).send('Success');
+  let resolver = new Addr2Line([elfFile]);
+
+  resolver.resolve(address)
+  .then( res => {
+    console.log(`Translation of <${address}> against file <${elfFile}>: <${JSON.stringify(res)}>`)
+    return resp.json(res);
   });
 
 });
-router.post('/elfs', (req, res) => {
+router.post('/elfs', (req, resp) => {
   if (!req.files || !req.files.file) {
-    res.status(400).send('No file received');
+    resp.status(400).send('No file received');
     return;
   }
   let part = req.files.file;
@@ -45,7 +44,7 @@ router.post('/elfs', (req, res) => {
   let msg = ''; 
 
   let elfObj = function() {
-    return res.json({
+    return resp.json({
       id: checksum,
       created: created  // Indicates to the client if the new elf was created. If false, the elf already existed in the FS
     });
@@ -76,12 +75,12 @@ router.post('/elfs', (req, res) => {
       }
       msg = `Could not write file <${elfFile}>: <${JSON.stringify(err)}>`
       console.log(msg);
-      return res.status(400).send(msg);
+      return resp.status(400).send(msg);
     });
   })
   .catch( err => {
     msg = `Could not ensure directory <${err}>`;
-    return res.status(400).send(msg);
+    return resp.status(400).send(msg);
   })
 });
 
