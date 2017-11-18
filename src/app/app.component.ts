@@ -6,5 +6,15 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'app';
+  title = 'addr2line-JS';
+  translateMe = '';
+  translated = '';
+
+  fileChange() {
+    console.log('Uploading');
+  }
+
+  translate() {
+    console.log(`Translating ${this.translateMe}`);
+  }
 }
