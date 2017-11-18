@@ -15,14 +15,18 @@ router.get('/', (req, resp) => {
 });
 router.get('/elf/:id/:addr', (req, resp) => {
   let elfFile = `./tmp/${req.params.id}/${req.params.id}.elf`;
-  let address = req.params.addr
-  console.log(`Translating address <${address}> against file <${elfFile}>`);
+  let addresses = req.params.addr.split(',');
+  console.log(`Translating addresses <${addresses}> against file <${elfFile}>`);
 
   let resolver = new Addr2Line([elfFile]);
+  let translations = [];
+  for(let i = 0; i < addresses.length; i++) {
+    translations.push(resolver.resolve(addresses[i]));
+  }
 
-  resolver.resolve(address)
+  Promise.all(translations)
   .then( res => {
-    console.log(`Translation of <${address}> against file <${elfFile}>: <${JSON.stringify(res)}>`)
+    console.log(`Translation of <${addresses}> against file <${elfFile}>: <${JSON.stringify(res)}>`)
     return resp.json(res);
   });
 
