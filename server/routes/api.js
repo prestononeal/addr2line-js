@@ -71,8 +71,8 @@ router.post('/elfs', (req, resp) => {
         .then( () => {
           console.log(`Touched <${elfFile}>`);
         })
-        .catch( () => {
-          console.log(`Unable to touch <${elFile}>`);
+        .catch(err => {
+          console.log(`Unable to touch <${elfFile}>`, err);
         });
 
         return elfObj();
