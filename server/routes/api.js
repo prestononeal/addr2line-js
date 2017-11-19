@@ -9,7 +9,18 @@ const touch = require('touch');
 
 const Addr2Line = require('addr2line').Addr2Line;
 
+const findRemoveSync = require('find-remove');
+
 const elfDir = './tmp';
+
+// TODO: remove this from the API library when configurations are better handled
+function cleanUpTemp() {
+  var result = findRemoveSync(elfDir, {extensions: ['.elf'], age: {seconds: 60*60}});
+  if (Object.keys(result).length !== 0) {
+    console.log('Cleaned up elf files:', result);
+  }
+}
+setInterval(cleanUpTemp, 10*60*1000); // Every 10 mins (in ms), clean up files older than one hour (in seconds)
 
 router.get('/', (req, resp) => {
   resp.send('API works!');

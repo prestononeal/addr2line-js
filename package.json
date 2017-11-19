@@ -27,6 +27,7 @@
     "core-js": "^2.4.1",
     "express": "^4.16.2",
     "express-fileupload": "^0.3.0",
+    "find-remove": "^1.0.1",
     "font-awesome": "^4.7.0",
     "fs-extra": "^4.0.2",
     "md5": "^2.2.1",
