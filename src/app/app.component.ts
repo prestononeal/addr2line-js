@@ -13,6 +13,11 @@ export interface ITranslation {
   line: number;
 }
 
+export interface IElfFile {
+  md5: string;
+  name: string;
+}
+
 export interface IAlert {
   type: string;
   message: string;
@@ -27,19 +32,22 @@ export class AppComponent implements OnInit {
   private uploader: FileUploader = new FileUploader({url: URL + 'elfs'});
   private title = 'addr2line-JS';
   private translateText = '';
-  private elfFileID = '';
   public alerts: Array<IAlert> = [];
   private translateTimerSubscription = undefined;
-  private noElfError = {
-    type: 'danger',
-    message: 'You must upload an ELF file before translating'
+  private elfAlerts = {
+    none: {
+      type: 'danger',
+      message: 'You must upload an ELF file before translating'
+    },
+    uploading: {
+      type: 'warning',
+      message: 'Uploading...'
+    }
   };
 
-  constructor(private http: HttpClient) {}
+  private currentElfFile: IElfFile;
 
-  test(event: Event) {
-    console.log('TEST', event);
-  }
+  constructor(private http: HttpClient) {}
 
   ngOnInit() {
     this.uploader = new FileUploader({url: URL + 'elfs'});
@@ -47,16 +55,24 @@ export class AppComponent implements OnInit {
       console.log(item, resp, status);
       if (status == 200) {
         resp = JSON.parse(resp);
-        this.elfFileID = resp.id;
+        this.currentElfFile = {
+          md5: resp.id,
+          name: item.file.name
+        };
         // TODO: remove the Elf file upload warning
-        console.log('Elf file to use: ', this.elfFileID);
+        console.log('Elf file to use: ', this.currentElfFile);
 
         // Now that we have an elf, try to translate our text
-        this.closeAlert(this.noElfError);
+        this.closeAlert(this.elfAlerts.none);
+        this.closeAlert(this.elfAlerts.uploading)
+        this.alerts.push({
+          type: 'info',
+          message: `${this.currentElfFile.name} uploaded successfully, md5 = ${this.currentElfFile.md5}`
+        })
         this.translateTextChange();  // If we uploaded an Elf file, and we already have text, start the timer
       } else {
         console.log('Error uploading elf file: ', status, resp);
-        this.elfFileID = '';
+        this.currentElfFile = undefined;
       }
     };
   }
@@ -70,6 +86,7 @@ export class AppComponent implements OnInit {
 
       if (fileType === 'elf') {
         // Go ahead and upload elfs to the API. 
+        this.alerts.push(this.elfAlerts.uploading);
       } else if (fileType === 'txt' || fileType === 'log') {
         // For text files, check if they can be written to the page
         let reader = new FileReader();
@@ -116,11 +133,11 @@ export class AppComponent implements OnInit {
   }
 
   translate() {
-    if (!this.elfFileID) {
-      if (this.alerts.indexOf(this.noElfError) === -1) {
+    if (!this.currentElfFile) {
+      if (this.alerts.indexOf(this.elfAlerts.none) === -1) {
         console.log('No elf!');
         // Only show the error if it's not already visible
-        this.alerts.push(this.noElfError);
+        this.alerts.push(this.elfAlerts.none);
       }
       return;
     }
@@ -133,8 +150,8 @@ export class AppComponent implements OnInit {
       // Nothing to do here
       return;
     }
-    console.log(`translate(): translating ${matches} with ${this.elfFileID}`);
-    this.http.get(URL + 'elf/' + this.elfFileID + '/' + matches.join(','))
+    console.log(`translate(): translating ${matches} with ${this.currentElfFile.md5}`);
+    this.http.get(URL + 'elf/' + this.currentElfFile.md5 + '/' + matches.join(','))
       .subscribe(resp => {
         let translations = <ITranslation[]>resp['results'];
         console.log('Got translations: ', translations);
