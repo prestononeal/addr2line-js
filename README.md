@@ -7,7 +7,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 ## Set-up development server
 1. Install npm
 2. Install and start MongoDB
-3. Run `npm start` for a dev server. Navigate to `http://localhost:3000/`. This will relaunch any time *server-side* changes are made.
+3. Run `npm start` for a dev server. Navigate to `http://localhost:3000/`. This will relaunch when changes are made.
 
 ## Code scaffolding
 

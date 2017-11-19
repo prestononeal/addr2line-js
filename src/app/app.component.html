@@ -1,23 +1,22 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div class="container" style="text-align:center">
-  <h1>
-    {{title}}
-  </h1>
+<div class="container">
+  <div>
+    <h1>
+      addr2line-JS
+      <small class="text-muted">addresses -> file names & numbers</small>
+    </h1>
+  </div>
+
+  <p *ngFor="let alert of alerts">
+      <ngb-alert [type]="alert.type" (close)="closeAlert(alert)">{{ alert.message }}</ngb-alert>
+  <p>
+
+  <div>
+    <input type="file" ng2FileSelect [uploader]="uploader" (change)="upload($event)" multiple />
+  </div>
+
+  <div class="form-group">
+    <textarea class="form-control" rows="20" cols="50" id="translate-text" [(ngModel)]="translateText" (ngModelChange)="translateTextChange()" placeholder=
+      "Upload an elf file. Type or upload (.txt/.log) text to translate.">
+    </textarea>
+  </div>
 </div>
-<table>
-  <tr>
-    <input type="file" ng2FileSelect [uploader]="uploader" />
-    <button type="button" class="btn btn-success btn-s" (click)="uploader.uploadAll()" [disabled]="!uploader.getNotUploadedItems().length"><span class="glyphicon glyphicon-upload"></span>Upload</button>
-  </tr>
-  <tr>
-    <td>Text to translate:</td>
-    <td>Translation:</td>
-  </tr>
-  <tr>
-    <td><textarea cols="50" rows="20" [(ngModel)]="translateMe"></textarea></td>
-    <td><textarea readonly cols="50" rows="20" [(ngModel)]="translated"></textarea></td>
-  </tr>
-  <tr>
-    <button (click)="translate()">Translate</button>
-  </tr>
-</table>
