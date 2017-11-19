@@ -45,18 +45,21 @@ function touchElf(elfFile) {
   });
 }
 
+function elfFilePath(checksum) {
+  return `${elfDir}/${checksum.toLowerCase()}.elf`;
+}
+
 router.get('/', (req, resp) => {
   resp.send('API works!');
 });
 router.get('/elf/:id/:addr', (req, resp) => {
-  let elfFile = `${elfDir}/${req.params.id}.elf`;
+  let elfFile = elfFilePath(req.params.id);
   let addresses = req.params.addr.split(',');
   console.log(`Translating addresses <${addresses}> against file <${elfFile}>`);
 
   // Make sure the file exists
-  let exists = fs.existsSync(elfFile);
-  if (!exists) {
-    return resp.status(400).send(`Elf file with md5 <${req.params.id}> does not exists`);
+  if (!fs.existsSync(elfFile)) {
+    return resp.status(400).send(`Elf file with checksum <${req.params.id}> does not exist`);
   }
   touchElf(elfFile);
 
@@ -73,6 +76,16 @@ router.get('/elf/:id/:addr', (req, resp) => {
   });
 
 });
+router.post('/elf/:id/touch', (req, resp) => {
+  let elfFile = elfFilePath(req.params.id);
+
+  if (!fs.existsSync(elfFile)) {
+    return resp.status(400).send(`Elf file with checksum <${req.params.id}> does not exist`);
+  }
+  touchElf(elfFile);
+
+  return resp.status(200);
+});
 router.post('/elfs', (req, resp) => {
   if (!req.files || !req.files.file) {
     resp.status(400).send('No file received');
@@ -83,7 +96,7 @@ router.post('/elfs', (req, resp) => {
   let checksum = md5(part.data);
 
   // Do we already have a file with this checksum? If so, return that one
-  let elfFile = `${elfDir}/${checksum}.elf`
+  let elfFile = elfFilePath(checksum);
 
   let created = false;
   let msg = ''; 
