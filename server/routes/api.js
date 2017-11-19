@@ -13,14 +13,37 @@ const findRemoveSync = require('find-remove');
 
 const elfDir = './tmp';
 
-// TODO: remove this from the API library when configurations are better handled
-function cleanUpTemp() {
-  var result = findRemoveSync(elfDir, {extensions: ['.elf'], age: {seconds: 60*60}});
+// TODO: remove this task from the API library when configurations are better handled
+function cleanUp() {
+  var result = findRemoveSync(elfDir, {extensions: ['.elf'], age: {seconds: 5*24*60*60}});
   if (Object.keys(result).length !== 0) {
     console.log('Cleaned up elf files:', result);
   }
 }
-setInterval(cleanUpTemp, 10*60*1000); // Every 10 mins (in ms), clean up files older than one hour (in seconds)
+// Every 1 hour (in ms), clean up files older than 5 days (in seconds)
+// We should only clean up old files. If we clean up newer files, we're more likely to hit 
+// race conditions with touching files after they're deleted. See touchElf for more info.
+setInterval(cleanUp, 1*60*60*1000);
+
+function touchElf(elfFile) {
+  // Touch the elf file to indicate to the cleanup task that it has recently been used
+  // The touch happens in a separate thread, don't assume the file has been touched after this 
+  // function returns. There is a possible race condition.
+  // For example:
+  // 1. Elf file is attempted to be uploaded
+  // 2. Elf file already exists
+  // 3. We start an asynchronous touch task and return the ID to the client
+  // 4. Before the touch task finishes, the cleanup task runs and deletes the elf file that was about to be touched.
+  // 5. The touch task touches the deleted file, creating an empty file. 
+  // TODO: a better, future approach would be to take the whole server down, delete old files, then restart the server
+  touch(elfFile)
+  .then( () => {
+    console.log(`Touched <${elfFile}>`);
+  })
+  .catch(err => {
+    console.log(`Unable to touch <${elfFile}>`, err);
+  });
+}
 
 router.get('/', (req, resp) => {
   resp.send('API works!');
@@ -29,6 +52,13 @@ router.get('/elf/:id/:addr', (req, resp) => {
   let elfFile = `${elfDir}/${req.params.id}.elf`;
   let addresses = req.params.addr.split(',');
   console.log(`Translating addresses <${addresses}> against file <${elfFile}>`);
+
+  // Make sure the file exists
+  let exists = fs.existsSync(elfFile);
+  if (!exists) {
+    return resp.status(400).send(`Elf file with md5 <${req.params.id}> does not exists`);
+  }
+  touchElf(elfFile);
 
   let resolver = new Addr2Line([elfFile]);
   let translations = [];
@@ -71,20 +101,15 @@ router.post('/elfs', (req, resp) => {
     .then( err => {
       created = true;
       console.log(`New elf file written: <${elfFile}>`);
+      // No need to touch the elf file since we just created it
       return elfObj();
     })
     .catch(err => {
       if (err.code === 'EEXIST') {
         console.log(`Elf file already exists: <${elfFile}>`);
 
-        // Touch the old file for book keeping, but don't block the response on it
-        touch(elfFile)
-        .then( () => {
-          console.log(`Touched <${elfFile}>`);
-        })
-        .catch(err => {
-          console.log(`Unable to touch <${elfFile}>`, err);
-        });
+        // Touch the file to refresh it
+        touchElf(elfFile);
 
         return elfObj();
       }

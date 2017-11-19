@@ -71,7 +71,7 @@ export class AppComponent implements OnInit {
           type: 'info',
           message: `${this.currentElfFile.name} uploaded successfully, md5 = ${this.currentElfFile.md5}`
         };
-        this.translateTextChange();  // If we uploaded an Elf file, and we already have text, start the timer
+        this.translate();  // If we uploaded an Elf file, and we already have text, start the timer
 
         // Clear the upload queue (Why isn't this done automatically by ng2-file-upload?)
         item.remove();
@@ -118,12 +118,19 @@ export class AppComponent implements OnInit {
     });
     this.uploader.uploadAll();
   }
-  
-  translateTextChange() {
-    console.log('Change, restarting timer');
+
+  cancelTranslateTimerSub() {
+    // Cancel the current translate timer.
+    // Either we typed in new text and want to reset the timer,
+    //   or we're overriding the timer and forcing a translation.
     if (this.translateTimerSubscription !== undefined) {
       this.translateTimerSubscription.unsubscribe();
     }
+  }
+  
+  translateTextChange() {
+    console.log('Change, restarting timer');
+    this.cancelTranslateTimerSub();
     this.translateTimerSubscription = Observable.timer(2 * 1000)
       .subscribe(() => {
         this.translateTimerSubscription = undefined;
@@ -132,6 +139,7 @@ export class AppComponent implements OnInit {
   }
 
   translate() {
+    this.cancelTranslateTimerSub();
     if (!this.currentElfFile) {
       if (this.alert !== this.elfAlerts.uploading) {
         this.alert = this.elfAlerts.none;
