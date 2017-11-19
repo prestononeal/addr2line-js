@@ -42,6 +42,10 @@ export class AppComponent implements OnInit {
     uploading: {
       type: 'warning',
       message: 'Uploading...'
+    },
+    serverError: {
+      type: 'danger',
+      message: 'There was an error talking to the server'
     }
   };
 
@@ -68,9 +72,13 @@ export class AppComponent implements OnInit {
           message: `${this.currentElfFile.name} uploaded successfully, md5 = ${this.currentElfFile.md5}`
         };
         this.translateTextChange();  // If we uploaded an Elf file, and we already have text, start the timer
+
+        // Clear the upload queue (Why isn't this done automatically by ng2-file-upload?)
+        item.remove();
       } else {
         console.log('Error uploading elf file: ', status, resp);
         this.currentElfFile = undefined;
+        this.alert = this.elfAlerts.serverError;
       }
     };
   }

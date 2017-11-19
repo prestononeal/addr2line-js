@@ -6,9 +6,7 @@
     </h1>
   </div>
 
-  <!-- <p *if="alert"> -->
-      <ngb-alert *ngIf="alert" [type]="alert.type" [dismissible]="false">{{ alert.message }}</ngb-alert>
-  <!-- <p> -->
+  <ngb-alert *ngIf="alert" [type]="alert.type" [dismissible]="false">{{ alert.message }}</ngb-alert>
 
   <div>
     <input type="file" ng2FileSelect [uploader]="uploader" (change)="upload($event)" multiple />

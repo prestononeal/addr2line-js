@@ -9,12 +9,13 @@ const touch = require('touch');
 
 const Addr2Line = require('addr2line').Addr2Line;
 
+const elfDir = './tmp';
 
 router.get('/', (req, resp) => {
   resp.send('API works!');
 });
 router.get('/elf/:id/:addr', (req, resp) => {
-  let elfFile = `./tmp/${req.params.id}/${req.params.id}.elf`;
+  let elfFile = `${elfDir}/${req.params.id}.elf`;
   let addresses = req.params.addr.split(',');
   console.log(`Translating addresses <${addresses}> against file <${elfFile}>`);
 
@@ -41,7 +42,6 @@ router.post('/elfs', (req, resp) => {
   let checksum = md5(part.data);
 
   // Do we already have a file with this checksum? If so, return that one
-  let elfDir = `./tmp/${checksum}`
   let elfFile = `${elfDir}/${checksum}.elf`
 
   let created = false;
@@ -55,14 +55,14 @@ router.post('/elfs', (req, resp) => {
   }
 
   fs.ensureDir(elfDir)
-  .then( () => {
+  .then(() => {
     fs.writeFile(elfFile, part.data, { flag: 'wx' })
     .then( err => {
       created = true;
       console.log(`New elf file written: <${elfFile}>`);
       return elfObj();
     })
-    .catch( err => {
+    .catch(err => {
       if (err.code === 'EEXIST') {
         console.log(`Elf file already exists: <${elfFile}>`);
 
