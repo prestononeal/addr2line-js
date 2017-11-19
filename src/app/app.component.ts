@@ -32,7 +32,7 @@ export class AppComponent implements OnInit {
   private uploader: FileUploader = new FileUploader({url: URL + 'elfs'});
   private title = 'addr2line-JS';
   private translateText = '';
-  public alerts: Array<IAlert> = [];
+  public alert: IAlert;
   private translateTimerSubscription = undefined;
   private elfAlerts = {
     none: {
@@ -63,12 +63,10 @@ export class AppComponent implements OnInit {
         console.log('Elf file to use: ', this.currentElfFile);
 
         // Now that we have an elf, try to translate our text
-        this.closeAlert(this.elfAlerts.none);
-        this.closeAlert(this.elfAlerts.uploading)
-        this.alerts.push({
+        this.alert = {
           type: 'info',
           message: `${this.currentElfFile.name} uploaded successfully, md5 = ${this.currentElfFile.md5}`
-        })
+        };
         this.translateTextChange();  // If we uploaded an Elf file, and we already have text, start the timer
       } else {
         console.log('Error uploading elf file: ', status, resp);
@@ -86,7 +84,7 @@ export class AppComponent implements OnInit {
 
       if (fileType === 'elf') {
         // Go ahead and upload elfs to the API. 
-        this.alerts.push(this.elfAlerts.uploading);
+        this.alert = this.elfAlerts.uploading;
       } else if (fileType === 'txt' || fileType === 'log') {
         // For text files, check if they can be written to the page
         let reader = new FileReader();
@@ -101,23 +99,16 @@ export class AppComponent implements OnInit {
 
         this.translateTextChange();  // This won't be called automatically when the translateText changes
       } else {
-        this.alerts.push({
+        this.alert = {
           type: 'danger',
           message: 'Unknown file uploaded'
-        });
+        };
 
         // Remove from the upload queue
         this.uploader.queue.splice(index, 1);
       }
     });
     this.uploader.uploadAll();
-  }
-
-  closeAlert(alert: IAlert) {
-    const index: number = this.alerts.indexOf(alert);
-    if (index !== -1) {
-      this.alerts.splice(index, 1);
-    }
   }
   
   translateTextChange() {
@@ -134,10 +125,8 @@ export class AppComponent implements OnInit {
 
   translate() {
     if (!this.currentElfFile) {
-      if (this.alerts.indexOf(this.elfAlerts.none) === -1) {
-        console.log('No elf!');
-        // Only show the error if it's not already visible
-        this.alerts.push(this.elfAlerts.none);
+      if (this.alert !== this.elfAlerts.uploading) {
+        this.alert = this.elfAlerts.none;
       }
       return;
     }
