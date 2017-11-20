@@ -1,4 +1,10 @@
-<div class="container">
+<div ng2FileDrop
+  [ngClass]="{'file-over': hasFileOver}"
+  (fileOver)="fileOver($event)"
+  [uploader]="uploader"
+  (onFileDrop)="upload($event)"
+  class="container file-drop-zone">
+
   <div>
     <h1>
       addr2line-JS

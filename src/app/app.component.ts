@@ -48,8 +48,8 @@ export class AppComponent implements OnInit {
       message: 'There was an error talking to the server'
     }
   };
-
   private currentElfFile: IElfFile;
+  public hasFileOver:boolean = false; 
 
   constructor(private http: HttpClient) {}
 
@@ -71,7 +71,7 @@ export class AppComponent implements OnInit {
           type: 'info',
           message: `${this.currentElfFile.name} uploaded successfully, md5 = ${this.currentElfFile.md5}`
         };
-        this.translate();  // If we uploaded an Elf file, and we already have text, start the timer
+        this.translate();  // If we uploaded an Elf file translate immediately
 
         // Clear the upload queue (Why isn't this done automatically by ng2-file-upload?)
         item.remove();
@@ -81,6 +81,11 @@ export class AppComponent implements OnInit {
         this.alert = this.elfAlerts.serverError;
       }
     };
+  }
+
+  public fileOver(e:any):void {
+    // Set to true if a file is hovering over the drop zone
+    this.hasFileOver = e;
   }
 
   upload(event: Event) {
@@ -99,13 +104,13 @@ export class AppComponent implements OnInit {
         reader.onload = () => {
           // reader.result contains the content of the file
           this.translateText = reader.result;
+          
+          this.translate();  // If we uploaded a text file, translate immediately
         };
         reader.readAsText(file);
         
         // Remove this from the upload queue
         this.uploader.queue.splice(index, 1);
-
-        this.translateTextChange();  // This won't be called automatically when the translateText changes
       } else {
         this.alert = {
           type: 'danger',
@@ -131,7 +136,7 @@ export class AppComponent implements OnInit {
   translateTextChange() {
     console.log('Change, restarting timer');
     this.cancelTranslateTimerSub();
-    this.translateTimerSubscription = Observable.timer(2 * 1000)
+    this.translateTimerSubscription = Observable.timer(2 * 1000)  // Translate text a few seconds after someone stops typing
       .subscribe(() => {
         this.translateTimerSubscription = undefined;
         this.translate();
