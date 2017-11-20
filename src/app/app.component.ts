@@ -41,7 +41,7 @@ export class AppComponent implements OnInit {
     },
     uploading: {
       type: 'warning',
-      message: 'Uploading...'
+      message: 'Uploading ELF'
     },
     serverError: {
       type: 'danger',

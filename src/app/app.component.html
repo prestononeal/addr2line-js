@@ -12,7 +12,9 @@
     </h1>
   </div>
 
-  <ngb-alert *ngIf="alert" [type]="alert.type" [dismissible]="false">{{ alert.message }}</ngb-alert>
+  <!-- For now, just assume that any warning alert is for an upload and add an upload animation. Might not be a good assumption going forward, 
+        then we'll need to investigate embedded HTML in the alert message -->
+  <ngb-alert *ngIf="alert" [type]="alert.type" [dismissible]="false">{{ alert.message }} <i *ngIf="alert.type==='warning'" class="fa fa-refresh fa-spin fa-lg fa-fw"></i></ngb-alert>
 
   <div>
     <input type="file" ng2FileSelect [uploader]="uploader" (change)="upload($event)" multiple />
