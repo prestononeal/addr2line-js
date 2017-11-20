@@ -172,7 +172,7 @@ export class AppComponent implements OnInit {
           }
           // Search and replace each address in the text
           // The signature will look like <file_name>:<line_number> (eg: "my_file.c::133")
-          let signature = tr.filename.split('/').slice(-1)[0] + ':' + tr.line.toString();
+          let signature = tr.filename.split('/').slice(-1)[0] + ':' + tr.line.toString() + ' ' + `(${tr.function})`;
           let hexAddr = '0x' + tr.address.toString(16);
           console.log(`Replacing ${hexAddr} with ${signature}`);
           // Do a case insensitive replace
