@@ -146,7 +146,7 @@ export class AppComponent implements OnInit {
   translate() {
     this.cancelTranslateTimerSub();
     if (!this.currentElfFile) {
-      if (this.alert !== this.elfAlerts.uploading) {
+      if (!this.uploader.queue.length) {
         this.alert = this.elfAlerts.none;
       }
       return;
