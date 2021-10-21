@@ -15,6 +15,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist/index.html'));
 });
 
-app.listen(config.dev.port, () => {
+app.listen(process.env.PORT || config.dev.port, () => {
   console.log("Listening ..");
 });
